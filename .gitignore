@@ -1,0 +1,19 @@
+# Dependencies - never commit these, they are huge and rebuildable
+node_modules/
+
+# Playwright output
+test-results/
+playwright-report/
+
+# Environment secrets - NEVER commit this file
+.env
+.env.local
+
+# Database files (from v1 onwards)
+*.db
+*.sqlite
+
+# OS noise
+Thumbs.db
+desktop.ini
+.DS_Store

@@ -1,0 +1,31 @@
+{
+  // This file tells TypeScript how to check your code.
+  // You will rarely touch it. It is set up for Node 24, which can run
+  // TypeScript files directly with no build step.
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ESNext", "DOM"],
+
+    // Tells TypeScript that Node's built-ins (process, console, etc) exist.
+    "types": ["node"],
+
+    // Strict mode. Turn this OFF and TypeScript stops helping you.
+    // Beginners are tempted to disable it when errors appear. Don't.
+    // The errors are the product.
+    "strict": true,
+
+    // Node 24 runs .ts files by deleting the types, not by compiling.
+    // These two settings make sure you only write TypeScript that can be
+    // deleted that way, so nothing breaks at runtime.
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+
+    "noEmit": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
+}
