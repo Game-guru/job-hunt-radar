@@ -22,6 +22,42 @@ npx playwright install chromium
 
 ---
 
+## Choosing a browser
+
+Near the top of `src/scrape.ts`:
+
+```ts
+const USE_EDGE = false;      // true = use my installed Microsoft Edge
+const SHOW_BROWSER = false;  // true = watch the browser window while it works
+```
+
+**Default (recommended):** Playwright's own bundled Chromium. It was downloaded by
+`npx playwright install chromium` and lives in `AppData\Local\ms-playwright`.
+It is completely separate from the Chrome/Edge I browse with — that is the point.
+Same behaviour on every machine.
+
+**Using Edge instead:** set `USE_EDGE = true`. It works, but only with a visible
+window. This machine's Edge is locked down by a system policy:
+
+```
+ERROR: Headless mode is disallowed by the system admin.
+```
+
+The code forces Edge to visible mode automatically so it doesn't crash.
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---|---|
+| `Executable doesn't exist` | Run `npx playwright install chromium` |
+| `Headless mode is disallowed by the system admin` | You set `USE_EDGE = true` — either set it back to `false`, or leave it visible |
+| Scraper finds 0 jobs | The site's HTML changed. Set `SHOW_BROWSER = true` and watch what actually loads |
+| Red squiggles in editor but it runs fine | Type errors. Run `npm run typecheck` to see them all |
+
+---
+
 ## What's here so far
 
 ```

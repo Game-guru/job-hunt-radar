@@ -51,7 +51,29 @@ type Job = {
 const TARGET_URL = 'https://realpython.github.io/fake-jobs/';
 
 // ---------------------------------------------------------------------------
-// 4. THE MAIN FUNCTION
+// 4. WHICH BROWSER TO USE
+// ---------------------------------------------------------------------------
+// Playwright downloaded its OWN private copy of Chromium when you ran
+// `npx playwright install chromium`. It lives in AppData and has nothing to do
+// with the Chrome or Edge you browse the web with.
+//
+// That is on purpose: a bundled browser behaves identically on your laptop, on
+// a colleague's Mac, and on a server. No "works on my machine" surprises.
+//
+// Set USE_EDGE to true if you would rather drive your installed Microsoft Edge.
+//
+// NOTE FOR THIS MACHINE: your Edge is managed by a system policy that blocks
+// headless (invisible) mode. So if USE_EDGE is true, the browser window MUST
+// be visible. The code below handles that for you automatically.
+
+const USE_EDGE = false;
+
+// Show the browser window while it works?
+// Watching it is the best debugging tool you have - try SHOW_BROWSER = true.
+const SHOW_BROWSER = false;
+
+// ---------------------------------------------------------------------------
+// 5. THE MAIN FUNCTION
 // ---------------------------------------------------------------------------
 // "async" means this function does slow things (like waiting for a website).
 // Inside an async function you use "await" to mean "pause here until this
@@ -62,25 +84,30 @@ const TARGET_URL = 'https://realpython.github.io/fake-jobs/';
 // races ahead before the page has loaded and you get empty results.
 
 async function scrapeJobs(): Promise<Job[]> {
-  // -- 4a. Start the browser --------------------------------------------
+  // -- 5a. Start the browser --------------------------------------------
   // headless: true  = run invisibly in the background (fast)
   // headless: false = watch the browser do it (great for learning/debugging)
   //
-  // TRY THIS: change it to false and run again. Watching it work is the
-  // moment Playwright stops feeling like magic.
-  const browser = await chromium.launch({ headless: true });
+  // Edge here is forced to visible mode, because this machine's policy
+  // refuses to launch it headless.
+  const browser = await chromium.launch({
+    channel: USE_EDGE ? 'msedge' : undefined,
+    headless: USE_EDGE ? false : !SHOW_BROWSER,
+  });
+
+  console.log(USE_EDGE ? 'Using: your installed Microsoft Edge' : 'Using: Playwright bundled Chromium');
 
   // A "page" is one browser tab.
   const page = await browser.newPage();
 
   console.log(`Opening ${TARGET_URL} ...`);
 
-  // -- 4b. Go to the page ------------------------------------------------
+  // -- 5b. Go to the page ------------------------------------------------
   // waitUntil: 'domcontentloaded' means "carry on once the HTML has arrived",
   // rather than waiting for every image and advert to finish loading.
   await page.goto(TARGET_URL, { waitUntil: 'domcontentloaded' });
 
-  // -- 4c. Find the things we want ---------------------------------------
+  // -- 5c. Find the things we want ---------------------------------------
   // A "locator" is Playwright's way of saying "the elements matching this
   // description". It does NOT grab them immediately - it is a recipe that
   // gets re-checked each time you use it. That is why Playwright is reliable
@@ -96,7 +123,7 @@ async function scrapeJobs(): Promise<Job[]> {
   const count = await jobCards.count();
   console.log(`Found ${count} job cards.\n`);
 
-  // -- 4d. Read each card ------------------------------------------------
+  // -- 5d. Read each card ------------------------------------------------
   const jobs: Job[] = [];
 
   for (let i = 0; i < count; i++) {
@@ -126,7 +153,7 @@ async function scrapeJobs(): Promise<Job[]> {
     });
   }
 
-  // -- 4e. Always close the browser --------------------------------------
+  // -- 5e. Always close the browser --------------------------------------
   // If you forget this, invisible Chrome processes pile up and eat your RAM.
   await browser.close();
 
@@ -134,7 +161,7 @@ async function scrapeJobs(): Promise<Job[]> {
 }
 
 // ---------------------------------------------------------------------------
-// 5. PRINTING THE RESULTS
+// 6. PRINTING THE RESULTS
 // ---------------------------------------------------------------------------
 // Splitting "get the data" from "show the data" into two functions is a habit
 // worth forming early. Later, v1 will swap this out for "save to database"
@@ -155,7 +182,7 @@ function printJobs(jobs: Job[]): void {
 }
 
 // ---------------------------------------------------------------------------
-// 6. RUN IT
+// 7. RUN IT
 // ---------------------------------------------------------------------------
 // This is the starting pistol. We call scrapeJobs(), wait for it, then print.
 //
@@ -178,7 +205,13 @@ scrapeJobs()
 // Reading code teaches you very little. Breaking and fixing it teaches you
 // everything. Do these in order:
 //
-// 1. Set headless to false and run it. Watch what happens.
+// 1. Set SHOW_BROWSER to true and run it. Watch the browser work by itself.
+//    Set it back to false when you are done - invisible is faster.
+//
+// 1b. Set USE_EDGE to true and run it. It drives your real Edge browser.
+//     Notice it stays visible no matter what - your system policy blocks
+//     headless Edge. Set it back to false afterwards; bundled Chromium is
+//     faster and more predictable.
 //
 // 2. Deliberately break it: change '.card-content' to '.card-contentXYZ'.
 //    Run it. Read the error message carefully. Errors are information, not
