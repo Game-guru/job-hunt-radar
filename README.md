@@ -100,3 +100,4 @@ Each version works on its own. Finish one before starting the next.
 - `headless: false` in `scrape.ts` makes the browser visible. Best debugging tool there is.
 - Errors are information, not failure. Read them properly before changing anything.
 - Finish the exercises at the bottom of `scrape.ts` before moving to v1.
+# job-hunt-radar
