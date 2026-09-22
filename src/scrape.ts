@@ -168,7 +168,7 @@ async function scrapeJobs(): Promise<Job[]> {
 // without touching the scraping code at all.
 
 function printJobs(jobs: Job[]): void {
-   const texasJobs = jobs.filter((job) => job.location.includes('TX'));
+   const texasJobs = jobs.sort((a,b) => a.company.localeCompare(b.company));
   for (const job of texasJobs) {
     console.log(`${job.title}`);
     console.log(`   Company:  ${job.company}`);
@@ -219,13 +219,7 @@ scrapeJobs()
 //    punishment - getting comfortable reading them is most of the job.
 //    Then change it back.
 //
-// 3. Only print jobs where the location contains "AE". You should get 37.
-//    Then try "AP" (32) and "AA" (31).
-//    This practice site uses fake state codes - AE, AP and AA are the only
-//    ones that exist. Before filtering on real data, always look at the data
-//    first: console.log(jobs.map(j => j.location).slice(0, 10));
-//    "0 results" can mean broken code OR genuinely nothing matched, and
-//    checking the data tells you which in ten seconds.
+// 3. Only print jobs where the location contains "TX".
 //    Hint: look up "JavaScript array filter" and "JavaScript string includes".
 //
 // 4. Print the jobs sorted alphabetically by company name.
@@ -235,6 +229,14 @@ scrapeJobs()
 //    job title, choose Inspect. Find where 'h2.title' comes from in the HTML.
 //    This is how you work out selectors for any site, forever.
 //
-// 6. Hard one: each job has a "Learn" link to a detail page containing a full
-//    description. Visit the first job's detail page and print its description.
-//    Hint: you will need another page.goto().
+// 6. Hard one: each job has an "Apply" link pointing to a detail page with a
+//    full description. Visit the first job's detail page and print it.
+//    (The "Learn" link just goes to realpython.com - it is not the detail page.)
+//    You already capture the Apply href as job.link.
+//    Hint: read the href with getAttribute('href'), then page.goto() that URL.
+//    The description lives in '.content p' on the detail page.
+//
+//    If you extend this to all 100 jobs: collect every URL into an array FIRST,
+//    then visit them. Once you navigate away, the listing page is gone and any
+//    locator pointing at it is stale. Add await page.waitForTimeout(500)
+//    between requests so you are not hammering the server.
