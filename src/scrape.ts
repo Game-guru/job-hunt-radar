@@ -66,11 +66,11 @@ const TARGET_URL = 'https://realpython.github.io/fake-jobs/';
 // headless (invisible) mode. So if USE_EDGE is true, the browser window MUST
 // be visible. The code below handles that for you automatically.
 
-const USE_EDGE = false;
+const USE_EDGE = true;
 
 // Show the browser window while it works?
 // Watching it is the best debugging tool you have - try SHOW_BROWSER = true.
-const SHOW_BROWSER = false;
+const SHOW_BROWSER = true;
 
 // ---------------------------------------------------------------------------
 // 5. THE MAIN FUNCTION
@@ -168,7 +168,8 @@ async function scrapeJobs(): Promise<Job[]> {
 // without touching the scraping code at all.
 
 function printJobs(jobs: Job[]): void {
-  for (const job of jobs) {
+   const texasJobs = jobs.filter((job) => job.location.includes('TX'));
+  for (const job of texasJobs) {
     console.log(`${job.title}`);
     console.log(`   Company:  ${job.company}`);
     console.log(`   Location: ${job.location}`);
@@ -178,7 +179,7 @@ function printJobs(jobs: Job[]): void {
   }
 
   console.log('-----------------------------------------');
-  console.log(`Total: ${jobs.length} jobs`);
+  console.log(`Total: ${texasJobs.length} jobs`);
 }
 
 // ---------------------------------------------------------------------------
@@ -218,7 +219,13 @@ scrapeJobs()
 //    punishment - getting comfortable reading them is most of the job.
 //    Then change it back.
 //
-// 3. Only print jobs where the location contains "TX".
+// 3. Only print jobs where the location contains "AE". You should get 37.
+//    Then try "AP" (32) and "AA" (31).
+//    This practice site uses fake state codes - AE, AP and AA are the only
+//    ones that exist. Before filtering on real data, always look at the data
+//    first: console.log(jobs.map(j => j.location).slice(0, 10));
+//    "0 results" can mean broken code OR genuinely nothing matched, and
+//    checking the data tells you which in ten seconds.
 //    Hint: look up "JavaScript array filter" and "JavaScript string includes".
 //
 // 4. Print the jobs sorted alphabetically by company name.
