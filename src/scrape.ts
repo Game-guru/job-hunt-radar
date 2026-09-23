@@ -30,7 +30,7 @@ import { chromium } from '@playwright/test';
 // at 3am. TypeScript catches it instantly in your editor. That is the entire
 // point of TypeScript - it is JavaScript plus a spell-checker for your data.
 
-type Job = {
+export type Job = {
   title: string;
   company: string;
   location: string;
@@ -83,7 +83,7 @@ const SHOW_BROWSER = true;
 // waiting for a browser. Forgetting await is the #1 beginner bug - your code
 // races ahead before the page has loaded and you get empty results.
 
-async function scrapeJobs(): Promise<Job[]> {
+export async function scrapeJobs(): Promise<Job[]> {
   // -- 5a. Start the browser --------------------------------------------
   // headless: true  = run invisibly in the background (fast)
   // headless: false = watch the browser do it (great for learning/debugging)
@@ -161,43 +161,19 @@ async function scrapeJobs(): Promise<Job[]> {
 }
 
 // ---------------------------------------------------------------------------
-// 6. PRINTING THE RESULTS
+// 6. WHAT HAPPENS NEXT
 // ---------------------------------------------------------------------------
-// Splitting "get the data" from "show the data" into two functions is a habit
-// worth forming early. Later, v1 will swap this out for "save to database"
-// without touching the scraping code at all.
-
-function printJobs(jobs: Job[]): void {
-   const texasJobs = jobs.sort((a,b) => a.company.localeCompare(b.company));
-  for (const job of texasJobs) {
-    console.log(`${job.title}`);
-    console.log(`   Company:  ${job.company}`);
-    console.log(`   Location: ${job.location}`);
-    console.log(`   Posted:   ${job.postedDate}`);
-    console.log(`   Link:     ${job.link}`);
-    console.log('');
-  }
-
-  console.log('-----------------------------------------');
-  console.log(`Total: ${texasJobs.length} jobs`);
-}
-
-// ---------------------------------------------------------------------------
-// 7. RUN IT
-// ---------------------------------------------------------------------------
-// This is the starting pistol. We call scrapeJobs(), wait for it, then print.
+// In v0 this file also printed the results and started itself.
 //
-// .catch() handles the case where something goes wrong (no internet, site
-// changed its HTML, etc). Without it you get an ugly unhandled crash.
-
-scrapeJobs()
-  .then(printJobs)
-  .catch((error) => {
-    console.error('Something went wrong:');
-    console.error(error);
-    // Exit code 1 tells the operating system "this failed".
-    process.exit(1);
-  });
+// In v1 it does neither. It has exactly one job: go to a website, return jobs.
+// Saving and displaying now live in db.ts and main.ts.
+//
+// This is called separation of concerns, and the payoff is concrete: when a
+// site changes its HTML you edit this file only. When you change how results
+// are displayed you edit main.ts only. Neither change can break the other.
+//
+// Notice the two `export` keywords above. Without them, Job and scrapeJobs
+// would be private to this file and main.ts could not reach them.
 
 // ---------------------------------------------------------------------------
 // YOUR EXERCISES - do these before moving to v1

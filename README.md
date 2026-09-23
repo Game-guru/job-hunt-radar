@@ -3,7 +3,7 @@
 An app that automatically collects job listings, scores them against what I want,
 and tracks my applications.
 
-Built while learning TypeScript. Currently at **v0**.
+Built while learning TypeScript. Currently at **v1**.
 
 ---
 
@@ -63,11 +63,35 @@ The code forces Edge to visible mode automatically so it doesn't crash.
 ```
 job-hunt-radar/
 ├── src/
-│   └── scrape.ts      <- the whole app right now. Start reading here.
+│   ├── main.ts        <- the conductor. `npm run scrape` starts here.
+│   ├── scrape.ts      <- gets jobs off the website. Nothing else.
+│   └── db.ts          <- saves jobs, detects new ones. Nothing else.
+├── jobs.db            <- the database (created on first run, git-ignored)
 ├── package.json       <- project name, dependencies, the npm run commands
 ├── tsconfig.json      <- TypeScript settings
 └── .gitignore         <- files git should ignore
 ```
+
+Three files, one responsibility each. Change how scraping works and only
+`scrape.ts` is touched. Change how results are displayed and only `main.ts` is.
+
+**Dependencies: Playwright and TypeScript. That's it.** The database is
+`node:sqlite`, built into Node 24 — nothing to install.
+
+---
+
+## What it does now
+
+```
+Run 1:  100 NEW jobs
+Run 2:  No new jobs since last run.
+```
+
+The database remembers what it has seen, so every run answers the only
+question that matters: **what changed?**
+
+Duplicates are handled by the database itself — `link` is the PRIMARY KEY, and
+`INSERT OR IGNORE` skips anything already stored. No duplicate-checking code.
 
 ---
 
@@ -77,8 +101,8 @@ Each version works on its own. Finish one before starting the next.
 
 | Version | What it adds | What I learn |
 |---------|--------------|--------------|
-| **v0** ← here | Scrape one site, print to terminal | JavaScript basics, Playwright, selectors |
-| v1 | Save to a database, detect new listings | data storage, avoiding duplicates |
+| **v0** ✅ | Scrape one site, print to terminal | JavaScript basics, Playwright, selectors |
+| **v1** ← here | Save to a database, detect new listings | SQL, primary keys, transactions, modules |
 | v2 | A web page to browse and track applications | React, frontend, APIs |
 | v3 | Runs automatically every morning, deployed online | scheduled jobs, deployment |
 | v4 | Playwright tests, match scoring, stats chart | automated testing, algorithms |

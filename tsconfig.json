@@ -23,6 +23,10 @@
     "verbatimModuleSyntax": true,
 
     "noEmit": true,
+
+    // Node 24 requires the .ts extension in import paths. TypeScript needs
+    // this flag to accept that (it only works alongside noEmit).
+    "allowImportingTsExtensions": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true

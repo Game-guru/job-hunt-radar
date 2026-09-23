@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Automatically collects job listings and tracks applications.",
   "scripts": {
-    "scrape": "node src/scrape.ts",
+    "scrape": "node src/main.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
