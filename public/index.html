@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!--
+  THE PAGE - v2
+
+  This file is the skeleton only. It contains no job data at all.
+
+  Look at the empty <div id="job-list"></div> near the bottom. When the browser
+  loads this file that div is empty. app.js then asks the server for the jobs
+  and builds the contents.
+
+  That split matters: the STRUCTURE is here, the DATA arrives separately.
+  It is why the page can update without reloading.
+-->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Hunt Radar</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <header>
+    <h1>Job Hunt Radar</h1>
+    <p class="subtitle">Scraped listings, tracked applications.</p>
+  </header>
+
+  <!-- The counts bar. app.js fills this in. -->
+  <section id="stats" class="stats"></section>
+
+  <!-- Filter buttons. data-filter is a custom attribute we invented;
+       app.js reads it to know which button was clicked. -->
+  <nav class="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="new">New</button>
+    <button class="filter-btn" data-filter="applied">Applied</button>
+    <button class="filter-btn" data-filter="interviewing">Interviewing</button>
+    <button class="filter-btn" data-filter="rejected">Rejected</button>
+  </nav>
+
+  <!-- Type here to search. app.js listens for changes. -->
+  <input type="search" id="search" placeholder="Search title, company or location...">
+
+  <!-- Empty on purpose. JavaScript fills it. -->
+  <div id="job-list"></div>
+
+  <p id="empty-message" class="empty hidden">No jobs match that.</p>
+
+  <!-- type="module" lets app.js use modern import syntax.
+       Scripts load at the end so the HTML above already exists when it runs. -->
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

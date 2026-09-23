@@ -73,9 +73,10 @@ function migrate(): void {
   // Ask SQLite to describe its own table, so we can see which columns exist.
   const columns = db.prepare(`SELECT name FROM pragma_table_info('jobs')`).all() as { name: string }[];
 
-  const hasLastSeen = columns.some((c) => c.name === 'last_seen_at');
+  // A small helper so we can check several columns without repeating ourselves.
+  const has = (name: string) => columns.some((c) => c.name === name);
 
-  if (!hasLastSeen) {
+  if (!has('last_seen_at')) {
     console.log('Migrating database: adding last_seen_at column...');
 
     // No NOT NULL here. The 100 rows already in the table have never had
@@ -87,6 +88,15 @@ function migrate(): void {
     // "last seen" is when we first saw them. Leaving them empty would be
     // a lie, and lying data causes bugs later.
     db.exec(`UPDATE jobs SET last_seen_at = first_seen_at WHERE last_seen_at IS NULL`);
+  }
+
+  if (!has('status')) {
+    console.log('Migrating database: adding status column...');
+
+    // Compare this with last_seen_at above. Here we CAN use NOT NULL,
+    // because DEFAULT 'new' tells SQLite exactly what to put in the
+    // existing rows. That is the missing piece it complained about before.
+    db.exec(`ALTER TABLE jobs ADD COLUMN status TEXT NOT NULL DEFAULT 'new'`);
   }
 }
 
@@ -185,9 +195,22 @@ export function saveJobs(jobs: Job[]): Job[] {
 // ORDER BY first_seen_at DESC puts the most recently discovered jobs first.
 // DESC = descending. ASC = ascending (the default).
 
-export function getAllJobs(): Job[] {
+// A Job is what the scraper produces. A JobRecord is what the database holds -
+// the same thing plus the extra fields only the database knows about.
+// & means "everything in Job, PLUS these".
+export type JobRecord = Job & {
+  status: string;
+  firstSeenAt: string;
+};
+
+// The four states a job application can be in.
+// Keeping this list in one place means the server, the page and the database
+// can never disagree about what counts as a valid status.
+export const VALID_STATUSES = ['new', 'applied', 'interviewing', 'rejected'] as const;
+
+export function getAllJobs(): JobRecord[] {
   const rows = db.prepare(`
-    SELECT link, title, company, location, posted_date
+    SELECT link, title, company, location, posted_date, status, first_seen_at
     FROM jobs
     ORDER BY first_seen_at DESC
   `).all();
@@ -201,7 +224,44 @@ export function getAllJobs(): Job[] {
     company: row.company as string,
     location: row.location as string,
     postedDate: row.posted_date as string,
+    status: row.status as string,
+    firstSeenAt: row.first_seen_at as string,
   }));
+}
+
+// ---------------------------------------------------------------------------
+// 4b. UPDATING APPLICATION STATUS
+// ---------------------------------------------------------------------------
+// Called when you click a button on the web page.
+//
+// Note the check against VALID_STATUSES. The browser is sending this value,
+// and anything a browser sends can be faked - a user can open developer tools
+// and post whatever they like. NEVER trust input from outside your program.
+// Validate it here, on the server, where it cannot be bypassed.
+//
+// Returns true if a row was actually updated, false if that link was unknown.
+
+export function updateStatus(link: string, status: string): boolean {
+  if (!VALID_STATUSES.includes(status as typeof VALID_STATUSES[number])) {
+    throw new Error(`Invalid status: ${status}`);
+  }
+
+  const result = db.prepare(`UPDATE jobs SET status = ? WHERE link = ?`).run(status, link);
+
+  // changes tells us how many rows were modified. 0 means no job had that link.
+  return result.changes > 0;
+}
+
+// Counts how many jobs are in each status, for the summary bar on the page.
+// GROUP BY is SQL for "bundle the rows by this column and work on each bundle".
+export function getStatusCounts(): Record<string, number> {
+  const rows = db.prepare(`SELECT status, COUNT(*) AS n FROM jobs GROUP BY status`).all();
+
+  const counts: Record<string, number> = {};
+  for (const row of rows) {
+    counts[row.status as string] = row.n as number;
+  }
+  return counts;
 }
 
 export function countJobs(): number {

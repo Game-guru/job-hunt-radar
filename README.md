@@ -3,14 +3,17 @@
 An app that automatically collects job listings, scores them against what I want,
 and tracks my applications.
 
-Built while learning TypeScript. Currently at **v1**.
+Built while learning TypeScript. Currently at **v2**.
+
+![Job Hunt Radar](screenshot.png)
 
 ---
 
 ## Running it
 
 ```bash
-npm run scrape      # scrape jobs and print them
+npm start           # start the web app, then open http://localhost:3000
+npm run scrape      # fetch new listings into the database
 npm run typecheck   # check for type errors
 ```
 
@@ -63,35 +66,52 @@ The code forces Edge to visible mode automatically so it doesn't crash.
 ```
 job-hunt-radar/
 ├── src/
-│   ├── main.ts        <- the conductor. `npm run scrape` starts here.
+│   ├── main.ts        <- the scraper run. `npm run scrape` starts here.
 │   ├── scrape.ts      <- gets jobs off the website. Nothing else.
-│   └── db.ts          <- saves jobs, detects new ones. Nothing else.
+│   ├── db.ts          <- saves jobs, tracks status. Nothing else.
+│   └── server.ts      <- the web server + API. `npm start` starts here.
+├── public/
+│   ├── index.html     <- the page skeleton (contains no data)
+│   ├── style.css      <- how it looks
+│   └── app.js         <- runs in the browser: fetches data, draws the page
 ├── jobs.db            <- the database (created on first run, git-ignored)
-├── package.json       <- project name, dependencies, the npm run commands
+├── package.json       <- dependencies and the npm run commands
 ├── tsconfig.json      <- TypeScript settings
 └── .gitignore         <- files git should ignore
 ```
 
-Three files, one responsibility each. Change how scraping works and only
-`scrape.ts` is touched. Change how results are displayed and only `main.ts` is.
+Each file has one responsibility. Change how scraping works and only
+`scrape.ts` is touched. Change how the page looks and only `style.css` is.
 
 **Dependencies: Playwright and TypeScript. That's it.** The database is
-`node:sqlite`, built into Node 24 — nothing to install.
+`node:sqlite` and the web server is `node:http` — both built into Node 24.
+Nothing else to install.
 
 ---
 
 ## What it does now
 
+**Terminal** — `npm run scrape`
 ```
 Run 1:  100 NEW jobs
 Run 2:  No new jobs since last run.
 ```
 
-The database remembers what it has seen, so every run answers the only
-question that matters: **what changed?**
+**Browser** — `npm start` → http://localhost:3000
+- Browse every listing found
+- Mark each one: new / applied / interviewing / rejected
+- Filter by status, search by title, company or location
+- Counts update live; everything persists in SQLite
 
-Duplicates are handled by the database itself — `link` is the PRIMARY KEY, and
-`INSERT OR IGNORE` skips anything already stored. No duplicate-checking code.
+### The API
+
+| Method | Route | Does |
+|---|---|---|
+| `GET` | `/api/jobs` | all jobs + status counts, as JSON |
+| `POST` | `/api/status` | change one job's status |
+
+Status values are validated **on the server** — the browser can't be trusted,
+because anyone can open devtools and post whatever they like.
 
 ---
 
@@ -102,7 +122,9 @@ Each version works on its own. Finish one before starting the next.
 | Version | What it adds | What I learn |
 |---------|--------------|--------------|
 | **v0** ✅ | Scrape one site, print to terminal | JavaScript basics, Playwright, selectors |
-| **v1** ← here | Save to a database, detect new listings | SQL, primary keys, transactions, modules |
+| **v1** ✅ | Save to a database, detect new listings | SQL, primary keys, transactions, migrations |
+| **v2** ← here | Web page to browse and track applications | HTTP servers, APIs, DOM, fetch, XSS |
+| v2.5 | Rebuild the front end in React | React, components, state |
 | v2 | A web page to browse and track applications | React, frontend, APIs |
 | v3 | Runs automatically every morning, deployed online | scheduled jobs, deployment |
 | v4 | Playwright tests, match scoring, stats chart | automated testing, algorithms |

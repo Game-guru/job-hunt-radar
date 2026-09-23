@@ -4,6 +4,7 @@
   "description": "Automatically collects job listings and tracks applications.",
   "scripts": {
     "scrape": "node src/main.ts",
+    "start": "node src/server.ts",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [],
