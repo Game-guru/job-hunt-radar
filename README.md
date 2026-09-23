@@ -3,7 +3,7 @@
 An app that automatically collects job listings, scores them against what I want,
 and tracks my applications.
 
-Built while learning TypeScript. Currently at **v2**.
+Built while learning TypeScript. Currently at **v2.5**.
 
 ![Job Hunt Radar](screenshot.png)
 
@@ -14,8 +14,17 @@ Built while learning TypeScript. Currently at **v2**.
 ```bash
 npm start           # start the web app, then open http://localhost:3000
 npm run scrape      # fetch new listings into the database
+npm run build       # compile the React front end into public/
+npm run dev         # front-end dev server with instant reload (needs npm start too)
 npm run typecheck   # check for type errors
 ```
+
+`npm start` serves whatever is in `public/`. That folder is **generated** by
+`npm run build`, so run the build after changing anything under `web/`.
+
+While actually writing front-end code, run both: `npm start` in one terminal
+for the API, `npm run dev` in another. Saving a file updates the browser
+instantly, with no rebuild and no refresh.
 
 If `npm run scrape` fails the very first time, run this once:
 
@@ -65,27 +74,51 @@ The code forces Edge to visible mode automatically so it doesn't crash.
 
 ```
 job-hunt-radar/
-├── src/
+├── src/                     <- the back end (runs on Node)
 │   ├── main.ts        <- the scraper run. `npm run scrape` starts here.
 │   ├── scrape.ts      <- gets jobs off the website. Nothing else.
 │   ├── db.ts          <- saves jobs, tracks status. Nothing else.
 │   └── server.ts      <- the web server + API. `npm start` starts here.
-├── public/
-│   ├── index.html     <- the page skeleton (contains no data)
-│   ├── style.css      <- how it looks
-│   └── app.js         <- runs in the browser: fetches data, draws the page
+├── web/                     <- the front end source (React)
+│   ├── index.html     <- an empty shell; React fills it in
+│   └── src/
+│       ├── main.tsx        <- hands the page over to React
+│       ├── App.tsx         <- holds all the state, decides what's on screen
+│       ├── types.ts        <- shared types, mirrors the API's shape
+│       ├── styles.css      <- how it looks
+│       └── components/
+│           ├── StatsBar.tsx   <- the counts row
+│           ├── Filters.tsx    <- the filter pills
+│           ├── SearchBox.tsx  <- the search field
+│           └── JobCard.tsx    <- one job listing (used 100 times)
+├── public/                  <- BUILT OUTPUT. Generated, not hand-written.
+├── legacy-vanilla/          <- the v2 front end, kept for comparison
 ├── jobs.db            <- the database (created on first run, git-ignored)
+├── vite.config.ts     <- how the front end gets built
 ├── package.json       <- dependencies and the npm run commands
 ├── tsconfig.json      <- TypeScript settings
 └── .gitignore         <- files git should ignore
 ```
 
 Each file has one responsibility. Change how scraping works and only
-`scrape.ts` is touched. Change how the page looks and only `style.css` is.
+`scrape.ts` is touched. Change how the page looks and only `styles.css` is.
 
-**Dependencies: Playwright and TypeScript. That's it.** The database is
-`node:sqlite` and the web server is `node:http` — both built into Node 24.
-Nothing else to install.
+**Back end dependencies: Playwright and TypeScript. That's it.** The database
+is `node:sqlite` and the web server is `node:http` — both built into Node 24.
+
+The front end adds React and Vite. None of it reaches the server: Vite compiles
+everything down to plain files in `public/`, which `node:http` serves as-is.
+
+### Why `legacy-vanilla/` is still here
+
+That folder is the same app written by hand — no React, no build step. It works.
+Compare `legacy-vanilla/app.js` with `web/src/App.tsx` and the difference is
+that the hand-written one calls `render()` after every single change, and
+forgetting one call leaves the screen quietly wrong. React removes that whole
+class of bug: describe what the screen should look like for the current data,
+and it works out what to update.
+
+Worth reading in that order. React makes no sense until you've felt the problem.
 
 ---
 
@@ -123,9 +156,8 @@ Each version works on its own. Finish one before starting the next.
 |---------|--------------|--------------|
 | **v0** ✅ | Scrape one site, print to terminal | JavaScript basics, Playwright, selectors |
 | **v1** ✅ | Save to a database, detect new listings | SQL, primary keys, transactions, migrations |
-| **v2** ← here | Web page to browse and track applications | HTTP servers, APIs, DOM, fetch, XSS |
-| v2.5 | Rebuild the front end in React | React, components, state |
-| v2 | A web page to browse and track applications | React, frontend, APIs |
+| **v2** ✅ | Web page to browse and track applications | HTTP servers, APIs, DOM, fetch, XSS |
+| **v2.5** ← here | Same page rebuilt in React | components, state, props, effects |
 | v3 | Runs automatically every morning, deployed online | scheduled jobs, deployment |
 | v4 | Playwright tests, match scoring, stats chart | automated testing, algorithms |
 

@@ -27,9 +27,13 @@
     // Node 24 requires the .ts extension in import paths. TypeScript needs
     // this flag to accept that (it only works alongside noEmit).
     "allowImportingTsExtensions": true,
+
+    // Turns JSX (the HTML-looking syntax in .tsx files) into real JavaScript.
+    // "react-jsx" is the modern mode - no need to import React in every file.
+    "jsx": "react-jsx",
     "skipLibCheck": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts"]
+  "include": ["src/**/*.ts", "web/**/*.d.ts", "web/**/*.ts", "web/**/*.tsx", "tests/**/*.ts", "vite.config.ts"]
 }
